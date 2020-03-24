@@ -21,22 +21,6 @@ import random,util,math
 class QLearningAgent(ReinforcementAgent):
     """
       Q-Learning Agent
-
-      Functions you should fill in:
-        - computeValueFromQValues
-        - computeActionFromQValues
-        - getQValue
-        - getAction
-        - update
-
-      Instance variables you have access to
-        - self.epsilon (exploration prob)
-        - self.alpha (learning rate)
-        - self.discount (discount rate)
-
-      Functions you should use
-        - self.getLegalActions(state)
-          which returns legal actions for a state
     """
     def __init__(self, **args):
         "You can initialize Q-values here..."
@@ -69,9 +53,8 @@ class QLearningAgent(ReinforcementAgent):
 
     def computeActionFromQValues(self, state):
         """
-          Compute the best action to take in a state.  Note that if there
-          are no legal actions, which is the case at the terminal state,
-          you should return None.
+          Compute the best action to take in a state.  If there are no legal
+          actions, which is the case at a terminal state, return None.
         """
         eps = 0.001
         best_action = None
@@ -88,13 +71,9 @@ class QLearningAgent(ReinforcementAgent):
     def getAction(self, state):
         """
           Compute the action to take in the current state.  With
-          probability self.epsilon, we should take a random action and
-          take the best policy action otherwise.  Note that if there are
-          no legal actions, which is the case at the terminal state, you
-          should choose None as the action.
-
-          HINT: You might want to use util.flipCoin(prob)
-          HINT: To pick randomly from a list, use random.choice(list)
+          probability self.epsilon, take a random action otherwise,
+          take the best policy action.  If there are no legal actions, 
+          which is the case at a terminal state, choose None as the action.
         """
         legalActions = self.getLegalActions(state)
         action = None
@@ -108,11 +87,8 @@ class QLearningAgent(ReinforcementAgent):
     def update(self, state, action, nextState, reward):
         """
           The parent class calls this to observe a
-          state = action => nextState and reward transition.
-          You should do your Q-Value update here
-
-          NOTE: You should never call this function,
-          it will be called on your behalf
+          state => action => nextState and reward transition.
+          NEVER call this function. It is called on your behalf.
         """
         self.qvalues[state,action] = \
             (1-self.alpha)*self.getQValue(state,action)\
@@ -152,8 +128,8 @@ class PacmanQAgent(QLearningAgent):
         informs parent of action for Pacman.  Do not change or remove this
         method.
         """
-        action = QLearningAgent.getAction(self,state)
-        self.doAction(state,action)
+        action = QLearningAgent.getAction(self, state)
+        self.doAction(state, action)
         return action
 
 
@@ -161,9 +137,8 @@ class ApproximateQAgent(PacmanQAgent):
     """
        ApproximateQLearningAgent
 
-       You should only have to overwrite getQValue
-       and update.  All other QLearningAgent functions
-       should work as is.
+       Only getQValue and update are overridden. All other
+       QLearningAgent functions should work as is.
     """
     def __init__(self, extractor='IdentityExtractor', **args):
         self.featExtractor = util.lookup(extractor, globals())()
@@ -175,14 +150,13 @@ class ApproximateQAgent(PacmanQAgent):
 
     def getQValue(self, state, action):
         """
-          Should return Q(state,action) = w * featureVector
-          where * is the dotProduct operator
+          Return Q(state,action) = w * featureVector where * is the dotProduct operator
         """
-        return float(self.getWeights()*self.featExtractor.getFeatures(state,action))
+        return float(self.getWeights() * self.featExtractor.getFeatures(state,action))
 
     def update(self, state, action, nextState, reward):
         """
-           Should update your weights based on transition
+           Update weights based on transition
         """
         difference = (reward + self.discount*self.getValue(nextState))\
                         - self.getQValue(state,action)
