@@ -1,0 +1,70 @@
+Q-Learning in Gridworld:
+    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -m
+    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -p  # step by step
+    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0     # automatic
+    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0      # fast
+    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r -0.1      # fast
+    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r -1.0      # die quick
+    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r  1.0      # stay alive
+
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid -l 0.3 -r -0.1
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid -l 0.2 -r -0.1
+    
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
+    python gridworld.py -k 100 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
+
+    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g MazeGrid
+
+Value Iteration in Gridworld:
+    python gridworld.py -k 40 -w 200 -s 0.25 -i 15 -a value -p -v # step by step
+    python gridworld.py -k 40 -w 200 -s 0.25 -i 15 -a value       # automatic
+
+    # crossing the bridge: noise vs discount
+    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.9 --noise 0.2  # too much noise
+    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.9 --noise 0.01 # get down the bridge
+    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.7 --noise 0.01 # too much discount
+    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.3 --noise 0.01  # more discount, shorter horizon
+
+    # risk, reward and horizon
+    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward -2 # risk cliff for closer reward
+    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward -1 # risk cliff for bigger reward
+    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.5 --noise 0.2 --livingReward -1  # don't risk cliff for closer reward
+    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward 0  # don't risk cliff for bigger reward
+    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward 20  # stay alive
+
+    
+
+
+
+(base) C:\Users\seoha\iCloudDrive\repos\cs188-rl>python gridworld.py -h
+Usage: gridworld.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -d DISCOUNT, --discount=DISCOUNT
+                        Discount on future (default 0.9)
+  -r R, --livingReward=R
+                        Reward for living for a time step (default 0.0)
+  -n P, --noise=P       How often action results in unintended direction
+                        (default 0.2)
+  -e E, --epsilon=E     Chance of taking a random action in q-learning
+                        (default 0.3)
+  -l P, --learningRate=P
+                        TD learning rate (default 0.5)
+  -i K, --iterations=K  Number of rounds of value iteration (default 10)
+  -k K, --episodes=K    Number of epsiodes of the MDP to run (default 1)
+  -g G, --grid=G        Grid to use (case sensitive; options are BookGrid,
+                        BridgeGrid, CliffGrid, MazeGrid, default BookGrid)
+  -w X, --windowSize=X  Request a window width of X pixels *per grid cell*
+                        (default 150)
+  -a A, --agent=A       Agent type (options are 'random', 'value' and 'q',
+                        default random)
+  -t, --text            Use text-only ASCII display
+  -p, --pause           Pause GUI after each time step when running the MDP
+  -q, --quiet           Skip display of any learning episodes
+  -s S, --speed=S       Speed of animation, S > 1.0 is faster, 0.0 < S < 1.0
+                        is slower (default 1.0)
+  -m, --manual          Manually control agent
+  -v, --valueSteps      Display each step of value iteration
