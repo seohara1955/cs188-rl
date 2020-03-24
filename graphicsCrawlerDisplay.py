@@ -28,11 +28,8 @@ import time
 import threading
 import sys
 import crawler
-#import pendulum
 import math
 from math import pi as PI
-
-robotType = 'crawler'
 
 class Application:
 
@@ -90,7 +87,7 @@ class Application:
         #self.exit_button.grid(row=0, column=9)
 
         ## Simulation Buttons ##
-#        self.setupSimulationButtons(win)
+        #self.setupSimulationButtons(win)
 
          ## Canvas ##
         self.canvas = tkinter.Canvas(root, height=200, width=1000)
@@ -147,12 +144,6 @@ class Application:
         text="+",command=(lambda: self.incrementSpeed(2)))
         self.speed_plus.grid(row=0, column=2)
 
-
-
-
-
-
-
     def skip5kSteps(self):
         self.stepsToSkip = 5000
 
@@ -167,19 +158,12 @@ class Application:
         self.__initGUI(win)
 
         # Init environment
-        if robotType == 'crawler':
-            self.robot = crawler.CrawlingRobot(self.canvas)
-            self.robotEnvironment = crawler.CrawlingRobotEnvironment(self.robot)
-        elif robotType == 'pendulum':
-            self.robot = pendulum.PendulumRobot(self.canvas)
-            self.robotEnvironment = \
-                pendulum.PendulumRobotEnvironment(self.robot)
-        else:
-            raise Exception("Unknown RobotType")
+        self.robot = crawler.CrawlingRobot(self.canvas)
+        self.robotEnvironment = crawler.CrawlingRobotEnvironment(self.robot)
 
         # Init Agent
-        simulationFn = lambda agent: \
-          simulation.SimulationEnvironment(self.robotEnvironment,agent)
+        #simulationFn = lambda agent: \
+        #simulation.SimulationEnvironment(self.robotEnvironment,agent)
         actionFn = lambda state: \
           self.robotEnvironment.getPossibleActions(state)
         self.learner = qlearningAgents.QLearningAgent(actionFn=actionFn)
@@ -194,7 +178,6 @@ class Application:
         self.stepsToSkip = 0
         self.thread = threading.Thread(target=self.run)
         self.thread.start()
-
 
     def exit(self):
         self.running = False
@@ -224,67 +207,6 @@ class Application:
         nextState, reward = self.robotEnvironment.doAction(action)
         self.learner.observeTransition(state, action, nextState, reward)
 
-    def animatePolicy(self):
-        if robotType != 'pendulum':
-            raise Exception('Only pendulum can animatePolicy')
-
-
-        totWidth = self.canvas.winfo_reqwidth()
-        totHeight = self.canvas.winfo_reqheight()
-
-        length = 0.48 * min(totWidth, totHeight)
-        x,y = totWidth-length-30, length+10
-
-
-
-        angleMin, angleMax = self.robot.getMinAndMaxAngle()
-        velMin, velMax = self.robot.getMinAndMaxAngleVelocity()
-
-        if not 'animatePolicyBox' in dir(self):
-            self.canvas.create_line(x,y,x+length,y)
-            self.canvas.create_line(x+length,y,x+length,y-length)
-            self.canvas.create_line(x+length,y-length,x,y-length)
-            self.canvas.create_line(x,y-length,x,y)
-            self.animatePolicyBox = 1
-            self.canvas.create_text(x+length/2,y+10,text='angle')
-            self.canvas.create_text(x-30,y-length/2,text='velocity')
-            self.canvas.create_text(x-60,y-length/4,text='Blue = kickLeft')
-            self.canvas.create_text(x-60,y-length/4+20,text='Red = kickRight')
-            self.canvas.create_text(x-60,y-length/4+40,text='White = doNothing')
-
-
-
-        angleDelta = (angleMax-angleMin) / 100
-        velDelta = (velMax-velMin) / 100
-        for i in range(100):
-            angle = angleMin + i * angleDelta
-
-            for j in range(100):
-                vel = velMin + j * velDelta
-                state = self.robotEnvironment.getState(angle,vel)
-                max, argMax = None, None
-                if not self.learner.seenState(state):
-                    argMax = 'unseen'
-                else:
-                    for action in ('kickLeft','kickRight','doNothing'):
-                        qVal = self.learner.getQValue(state, action)
-                        if max == None or qVal > max:
-                            max, argMax = qVal, action
-                if argMax != 'unseen':
-                    if argMax == 'kickLeft':
-                        color = 'blue'
-                    elif argMax == 'kickRight':
-                        color = 'red'
-                    elif argMax == 'doNothing':
-                        color = 'white'
-                    dx = length / 100.0
-                    dy = length / 100.0
-                    x0, y0 = x+i*dx, y-j*dy
-                    self.canvas.create_rectangle(x0,y0,x0+dx,y0+dy,fill=color)
-
-
-
-
     def run(self):
         self.stepCount = 0
         self.learner.startEpisode()
@@ -306,10 +228,6 @@ class Application:
 
     def start(self):
         self.win.mainloop()
-
-
-
-
 
 def run():
     global root
