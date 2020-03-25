@@ -33,30 +33,35 @@ from math import pi as PI
 
 class Application:
 
-    def sigmoid(self, x):
-        return 1.0 / (1.0 + 2.0 ** (-x))
+    def __init__(self, win):
 
-    def incrementSpeed(self, inc):
-        self.tickTime *= inc
-        self.speed_label['text'] = 'Step Delay: %.5f' % (self.tickTime)
+        self.ep = 0
+        self.ga = 2
+        self.al = 2
+        self.stepCount = 0
 
-    def incrementEpsilon(self, inc):
-        self.ep += inc
-        self.epsilon = self.sigmoid(self.ep)
+        ## Init Gui
+        self.__initGUI(win)
+
+        # Init environment
+        self.robot = crawler.CrawlingRobot(self.canvas)
+        self.robotEnvironment = crawler.CrawlingRobotEnvironment(self.robot)
+
+        # Init Agent
+        actionFn = lambda state: \
+          self.robotEnvironment.getPossibleActions(state)
+        self.learner = qlearningAgents.QLearningAgent(actionFn=actionFn)
+
         self.learner.setEpsilon(self.epsilon)
-        self.epsilon_label['text'] = 'Epsilon: %.3f' % (self.epsilon)
-
-    def incrementGamma(self, inc):
-        self.ga += inc
-        self.gamma = self.sigmoid(self.ga)
-        self.learner.setDiscount(self.gamma)
-        self.gamma_label['text'] = 'Discount: %.3f' % (self.gamma)
-
-    def incrementAlpha(self, inc):
-        self.al += inc
-        self.alpha = self.sigmoid(self.al)
         self.learner.setLearningRate(self.alpha)
-        self.alpha_label['text'] = 'Learning Rate: %.3f' % (self.alpha)
+        self.learner.setDiscount(self.gamma)
+
+        # Start GUI
+        self.running = True
+        self.stopped = False
+        self.stepsToSkip = 0
+        self.thread = threading.Thread(target=self.run)
+        self.thread.start()
 
     def __initGUI(self, win):
         ## Window ##
@@ -88,31 +93,17 @@ class Application:
         self.canvas = tkinter.Canvas(root, height=200, width=1000)
         self.canvas.grid(row=2,columnspan=10)
 
-    def setupAlphaButtonAndLabel(self, win):
-        self.alpha_minus = tkinter.Button(win,
-        text="-",command=(lambda: self.incrementAlpha(self.dec)))
-        self.alpha_minus.grid(row=1, column=3, padx=10)
+    def setupSpeedButtonAndLabel(self, win):
+        self.speed_minus = tkinter.Button(win,
+        text="-",command=(lambda: self.incrementSpeed(.5)))
+        self.speed_minus.grid(row=0, column=0)
 
-        self.alpha = self.sigmoid(self.al)
-        self.alpha_label = tkinter.Label(win, text='Learning Rate: %.3f' % (self.alpha))
-        self.alpha_label.grid(row=1, column=4)
+        self.speed_label = tkinter.Label(win, text='Step Delay: %.5f' % (self.tickTime))
+        self.speed_label.grid(row=0, column=1)
 
-        self.alpha_plus = tkinter.Button(win,
-        text="+",command=(lambda: self.incrementAlpha(self.inc)))
-        self.alpha_plus.grid(row=1, column=5, padx=10)
-
-    def setUpGammaButtonAndLabel(self, win):
-        self.gamma_minus = tkinter.Button(win,
-        text="-",command=(lambda: self.incrementGamma(self.dec)))
-        self.gamma_minus.grid(row=1, column=0, padx=10)
-
-        self.gamma = self.sigmoid(self.ga)
-        self.gamma_label = tkinter.Label(win, text='Discount: %.3f' % (self.gamma))
-        self.gamma_label.grid(row=1, column=1)
-
-        self.gamma_plus = tkinter.Button(win,
-        text="+",command=(lambda: self.incrementGamma(self.inc)))
-        self.gamma_plus.grid(row=1, column=2, padx=10)
+        self.speed_plus = tkinter.Button(win,
+        text="+",command=(lambda: self.incrementSpeed(2)))
+        self.speed_plus.grid(row=0, column=2)
 
     def setupEpsilonButtonAndLabel(self, win):
         self.epsilon_minus = tkinter.Button(win,
@@ -127,50 +118,59 @@ class Application:
         text="+",command=(lambda: self.incrementEpsilon(self.inc)))
         self.epsilon_plus.grid(row=0, column=5)
 
-    def setupSpeedButtonAndLabel(self, win):
-        self.speed_minus = tkinter.Button(win,
-        text="-",command=(lambda: self.incrementSpeed(.5)))
-        self.speed_minus.grid(row=0, column=0)
+    def setUpGammaButtonAndLabel(self, win):
+        self.gamma_minus = tkinter.Button(win,
+        text="-",command=(lambda: self.incrementGamma(self.dec)))
+        self.gamma_minus.grid(row=1, column=0, padx=10)
 
-        self.speed_label = tkinter.Label(win, text='Step Delay: %.5f' % (self.tickTime))
-        self.speed_label.grid(row=0, column=1)
+        self.gamma = self.sigmoid(self.ga)
+        self.gamma_label = tkinter.Label(win, text='Discount: %.3f' % (self.gamma))
+        self.gamma_label.grid(row=1, column=1)
 
-        self.speed_plus = tkinter.Button(win,
-        text="+",command=(lambda: self.incrementSpeed(2)))
-        self.speed_plus.grid(row=0, column=2)
+        self.gamma_plus = tkinter.Button(win,
+        text="+",command=(lambda: self.incrementGamma(self.inc)))
+        self.gamma_plus.grid(row=1, column=2, padx=10)
+
+    def setupAlphaButtonAndLabel(self, win):
+        self.alpha_minus = tkinter.Button(win,
+        text="-",command=(lambda: self.incrementAlpha(self.dec)))
+        self.alpha_minus.grid(row=1, column=3, padx=10)
+
+        self.alpha = self.sigmoid(self.al)
+        self.alpha_label = tkinter.Label(win, text='Learning Rate: %.3f' % (self.alpha))
+        self.alpha_label.grid(row=1, column=4)
+
+        self.alpha_plus = tkinter.Button(win,
+        text="+",command=(lambda: self.incrementAlpha(self.inc)))
+        self.alpha_plus.grid(row=1, column=5, padx=10)
+
+    def sigmoid(self, x):
+        return 1.0 / (1.0 + 2.0 ** (-x))
+
+    def incrementSpeed(self, inc):
+        self.tickTime *= inc
+        self.speed_label['text'] = 'Step Delay: %.5f' % (self.tickTime)
+
+    def incrementEpsilon(self, inc):
+        self.ep += inc
+        self.epsilon = self.sigmoid(self.ep)
+        self.learner.setEpsilon(self.epsilon)
+        self.epsilon_label['text'] = 'Epsilon: %.3f' % (self.epsilon)
+
+    def incrementGamma(self, inc):
+        self.ga += inc
+        self.gamma = self.sigmoid(self.ga)
+        self.learner.setDiscount(self.gamma)
+        self.gamma_label['text'] = 'Discount: %.3f' % (self.gamma)
+
+    def incrementAlpha(self, inc):
+        self.al += inc
+        self.alpha = self.sigmoid(self.al)
+        self.learner.setLearningRate(self.alpha)
+        self.alpha_label['text'] = 'Learning Rate: %.3f' % (self.alpha)
 
     def skip5kSteps(self):
         self.stepsToSkip = 5000
-
-    def __init__(self, win):
-
-        self.ep = 0
-        self.ga = 2
-        self.al = 2
-        self.stepCount = 0
-        ## Init Gui
-
-        self.__initGUI(win)
-
-        # Init environment
-        self.robot = crawler.CrawlingRobot(self.canvas)
-        self.robotEnvironment = crawler.CrawlingRobotEnvironment(self.robot)
-
-        # Init Agent
-        actionFn = lambda state: \
-          self.robotEnvironment.getPossibleActions(state)
-        self.learner = qlearningAgents.QLearningAgent(actionFn=actionFn)
-
-        self.learner.setEpsilon(self.epsilon)
-        self.learner.setLearningRate(self.alpha)
-        self.learner.setDiscount(self.gamma)
-
-        # Start GUI
-        self.running = True
-        self.stopped = False
-        self.stepsToSkip = 0
-        self.thread = threading.Thread(target=self.run)
-        self.thread.start()
 
     def exit(self):
         self.running = False
