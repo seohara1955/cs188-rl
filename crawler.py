@@ -174,10 +174,8 @@ class CrawlingRobot:
 
         # Position and Velocity Sign Post
         self.positions.append(self.getRobotPosition()[0])
-#        self.angleSums.append(abs(math.degrees(oldArmAngle)-math.degrees(newArmAngle)))
         if len(self.positions) > 100:
             self.positions.pop(0)
- #           self.angleSums.pop(0)
 
     def moveHand(self, newHandAngle):
         """
@@ -196,10 +194,8 @@ class CrawlingRobot:
 
         # Position and Velocity Sign Post
         self.positions.append(self.getRobotPosition()[0])
- #       self.angleSums.append(abs(math.degrees(oldHandAngle)-math.degrees(newHandAngle)))
         if len(self.positions) > 100:
             self.positions.pop(0)
- #           self.angleSums.pop(0)
 
     def getMinAndMaxArmAngles(self):
         """
@@ -295,24 +291,16 @@ class CrawlingRobot:
 
 
         # Position and Velocity Sign Post
-#        time = len(self.positions) + 0.5 * sum(self.angleSums)
-#        velocity = (self.positions[-1]-self.positions[0]) / time
-#        if len(self.positions) == 1: return
+        # NOTE: multiple commented-out lines have been deleted in this section.
+        #       If you are modifying this code, you may want to review the
+        #       original version.
         steps = (stepCount - self.lastStep)
-        if steps==0:return
- #       pos = self.positions[-1]
-#        velocity = (pos - self.lastPos) / steps
-  #      g = .9 ** (10 * stepDelay)
-#        g = .99 ** steps
-#        self.velAvg = g * self.velAvg + (1 - g) * velocity
- #       g = .999 ** steps
- #       self.velAvg2 = g * self.velAvg2 + (1 - g) * velocity
+        if steps==0: return
         pos = self.positions[-1]
         velocity = pos - self.positions[-2]
         vel2 = (pos - self.positions[0]) / len(self.positions)
         self.velAvg = .9 * self.velAvg + .1 * vel2
         velMsg = '100-step Avg Velocity: %.2f' % self.velAvg
-#        velMsg2 = '1000-step Avg Velocity: %.2f' % self.velAvg2
         velocityMsg = 'Velocity: %.2f' % velocity
         positionMsg = 'Position: %2.f' % pos
         stepMsg = 'Step: %d' % stepCount
@@ -321,25 +309,18 @@ class CrawlingRobot:
             self.canvas.delete(self.pos_msg)
             self.canvas.delete(self.step_msg)
             self.canvas.delete(self.velavg_msg)
- #           self.canvas.delete(self.velavg2_msg)
- #       self.velavg2_msg = self.canvas.create_text(850,190,text=velMsg2)
         self.velavg_msg = self.canvas.create_text(650,190,text=velMsg)
         self.vel_msg = self.canvas.create_text(450,190,text=velocityMsg)
         self.pos_msg = self.canvas.create_text(250,190,text=positionMsg)
         self.step_msg = self.canvas.create_text(50,190,text=stepMsg)
-#        self.lastPos = pos
         self.lastStep = stepCount
-#        self.lastVel = velocity
 
     def __init__(self, canvas):
 
         ## Canvas ##
         self.canvas = canvas
         self.velAvg = 0
-#        self.velAvg2 = 0
-#        self.lastPos = 0
         self.lastStep = 0
-#        self.lastVel = 0
 
         ## Arm and Hand Degrees ##
         self.armAngle = self.oldArmDegree = 0.0

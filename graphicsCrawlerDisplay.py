@@ -38,9 +38,6 @@ class Application:
 
     def incrementSpeed(self, inc):
         self.tickTime *= inc
-#        self.epsilon = min(1.0, self.epsilon)
-#        self.epsilon = max(0.0,self.epsilon)
-#        self.learner.setSpeed(self.epsilon)
         self.speed_label['text'] = 'Step Delay: %.5f' % (self.tickTime)
 
     def incrementEpsilon(self, inc):
@@ -71,9 +68,10 @@ class Application:
         self.inc = .5
         self.tickTime = 0.1
 
-        ## Epsilon Button + Label ##
+        ## Speed Button + Label ##
         self.setupSpeedButtonAndLabel(win)
 
+        ## Epsilon Button + Label ##
         self.setupEpsilonButtonAndLabel(win)
 
         ## Gamma Button + Label ##
@@ -83,11 +81,8 @@ class Application:
         self.setupAlphaButtonAndLabel(win)
 
         ## Exit Button ##
-        #self.exit_button = tkinter.Button(win,text='Quit', command=self.exit)
-        #self.exit_button.grid(row=0, column=9)
-
-        ## Simulation Buttons ##
-        #self.setupSimulationButtons(win)
+        self.exit_button = tkinter.Button(win,text='Quit', command=self.exit)
+        self.exit_button.grid(row=0, column=9)
 
          ## Canvas ##
         self.canvas = tkinter.Canvas(root, height=200, width=1000)
@@ -162,8 +157,6 @@ class Application:
         self.robotEnvironment = crawler.CrawlingRobotEnvironment(self.robot)
 
         # Init Agent
-        #simulationFn = lambda agent: \
-        #simulation.SimulationEnvironment(self.robotEnvironment,agent)
         actionFn = lambda state: \
           self.robotEnvironment.getPossibleActions(state)
         self.learner = qlearningAgents.QLearningAgent(actionFn=actionFn)
@@ -223,7 +216,6 @@ class Application:
                 self.step()
             self.stepsToSkip = 0
             self.step()
-#          self.robot.draw()
         self.learner.stopEpisode()
 
     def start(self):
@@ -234,10 +226,6 @@ def run():
     root = tkinter.Tk()
     root.title( 'Crawler GUI' )
     root.resizable( 0, 0 )
-
-#  root.mainloop()
-
-
     app = Application(root)
     def update_gui():
         app.robot.draw(app.stepCount, app.tickTime)
