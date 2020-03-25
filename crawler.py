@@ -113,7 +113,6 @@ class CrawlingRobotEnvironment(environment.Environment):
         self.state = nextState
         return nextState, reward
 
-
     def reset(self):
         """
          Resets the Environment to the initial state
@@ -135,6 +134,48 @@ class CrawlingRobotEnvironment(environment.Environment):
 
 class CrawlingRobot:
 
+    def __init__(self, canvas):
+
+        ## Canvas ##
+        self.canvas = canvas
+        self.velAvg = 0
+        self.lastStep = 0
+
+        ## Arm and Hand Degrees ##
+        self.armAngle = self.oldArmDegree = 0.0
+        self.handAngle = self.oldHandDegree = -PI/6
+
+        self.maxArmAngle = PI/6
+        self.minArmAngle = -PI/6
+
+        self.maxHandAngle = 0
+        self.minHandAngle = -(5.0/6.0) * PI
+
+        ## Draw Ground ##
+        self.totWidth = canvas.winfo_reqwidth()
+        self.totHeight = canvas.winfo_reqheight()
+        self.groundHeight = 40
+        self.groundY = self.totHeight - self.groundHeight
+
+        self.ground = canvas.create_rectangle(0,
+            self.groundY,self.totWidth,self.totHeight, fill='blue')
+
+        ## Robot Body ##
+        self.robotWidth = 80
+        self.robotHeight = 40
+        self.robotPos = (20, self.groundY)
+        self.robotBody = canvas.create_polygon(0,0,0,0,0,0,0,0, fill='green')
+
+        ## Robot Arm ##
+        self.armLength = 60
+        self.robotArm = canvas.create_line(0,0,0,0,fill='orange',width=5)
+
+        ## Robot Hand ##
+        self.handLength = 40
+        self.robotHand = canvas.create_line(0,0,0,0,fill='red',width=3)
+
+        self.positions = [0,0]
+
     def setAngles(self, armAngle, handAngle):
         """
             set the robot's arm and hand angles
@@ -148,14 +189,6 @@ class CrawlingRobot:
             returns the pair of (armAngle, handAngle)
         """
         return self.armAngle, self.handAngle
-
-    def getRobotPosition(self):
-        """
-            returns the (x,y) coordinates
-            of the lower-left point of the
-            robot
-        """
-        return self.robotPos
 
     def moveArm(self, newArmAngle):
         """
@@ -210,26 +243,6 @@ class CrawlingRobot:
             for the hand angles returns (min,max) pair
         """
         return self.minHandAngle, self.maxHandAngle
-
-    def getRotationAngle(self):
-        """
-            get the current angle the
-            robot body is rotated off the ground
-        """
-        armCos, armSin = self.__getCosAndSin(self.armAngle)
-        handCos, handSin = self.__getCosAndSin(self.handAngle)
-        x = self.armLength * armCos + self.handLength * handCos + self.robotWidth
-        y = self.armLength * armSin + self.handLength * handSin + self.robotHeight
-        if y < 0:
-            return math.atan(-y/x)
-        return 0.0
-
-
-    ## You shouldn't need methods below here
-
-
-    def __getCosAndSin(self, angle):
-        return math.cos(angle), math.sin(angle)
 
     def displacement(self, oldArmDegree, oldHandDegree, armDegree, handDegree):
 
@@ -289,7 +302,6 @@ class CrawlingRobot:
 
         self.canvas.coords(self.robotHand,xArm,yArm,xHand,yHand)
 
-
         # Position and Velocity Sign Post
         # NOTE: multiple commented-out lines have been deleted in this section.
         #       If you are modifying this code, you may want to review the
@@ -315,50 +327,29 @@ class CrawlingRobot:
         self.step_msg = self.canvas.create_text(50,190,text=stepMsg)
         self.lastStep = stepCount
 
-    def __init__(self, canvas):
+    def getRobotPosition(self):
+        """
+            returns the (x,y) coordinates
+            of the lower-left point of the
+            robot
+        """
+        return self.robotPos
 
-        ## Canvas ##
-        self.canvas = canvas
-        self.velAvg = 0
-        self.lastStep = 0
+    def getRotationAngle(self):
+        """
+            get the current angle the
+            robot body is rotated off the ground
+        """
+        armCos, armSin = self.__getCosAndSin(self.armAngle)
+        handCos, handSin = self.__getCosAndSin(self.handAngle)
+        x = self.armLength * armCos + self.handLength * handCos + self.robotWidth
+        y = self.armLength * armSin + self.handLength * handSin + self.robotHeight
+        if y < 0:
+            return math.atan(-y/x)
+        return 0.0
 
-        ## Arm and Hand Degrees ##
-        self.armAngle = self.oldArmDegree = 0.0
-        self.handAngle = self.oldHandDegree = -PI/6
-
-        self.maxArmAngle = PI/6
-        self.minArmAngle = -PI/6
-
-        self.maxHandAngle = 0
-        self.minHandAngle = -(5.0/6.0) * PI
-
-        ## Draw Ground ##
-        self.totWidth = canvas.winfo_reqwidth()
-        self.totHeight = canvas.winfo_reqheight()
-        self.groundHeight = 40
-        self.groundY = self.totHeight - self.groundHeight
-
-        self.ground = canvas.create_rectangle(0,
-            self.groundY,self.totWidth,self.totHeight, fill='blue')
-
-        ## Robot Body ##
-        self.robotWidth = 80
-        self.robotHeight = 40
-        self.robotPos = (20, self.groundY)
-        self.robotBody = canvas.create_polygon(0,0,0,0,0,0,0,0, fill='green')
-
-        ## Robot Arm ##
-        self.armLength = 60
-        self.robotArm = canvas.create_line(0,0,0,0,fill='orange',width=5)
-
-        ## Robot Hand ##
-        self.handLength = 40
-        self.robotHand = canvas.create_line(0,0,0,0,fill='red',width=3)
-
-        self.positions = [0,0]
-  #      self.angleSums = [0,0]
-
-
+    def __getCosAndSin(self, angle):
+        return math.cos(angle), math.sin(angle)
 
 if __name__ == '__main__':
     from graphicsCrawlerDisplay import *
