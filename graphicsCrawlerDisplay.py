@@ -184,19 +184,14 @@ class Application:
         sys.exit(0)
 
     def step(self):
-
         self.stepCount += 1
-
-        state = self.robotEnvironment.getCurrentState()
-        actions = self.robotEnvironment.getPossibleActions(state)
-        if len(actions) == 0.0:
+        if self.robotEnvironment.isTerminal():
             self.robotEnvironment.reset()
-            state = self.robotEnvironment.getCurrentState()
-            actions = self.robotEnvironment.getPossibleActions(state)
             print('Reset!')
+        state = self.robotEnvironment.getCurrentState()
         action = self.learner.getAction(state)
         if action == None:
-            raise Exception('None action returned: Code Not Complete')
+            raise Exception('Error: no action returned.')
         nextState, reward = self.robotEnvironment.doAction(action)
         self.learner.observeTransition(state, action, nextState, reward)
 
