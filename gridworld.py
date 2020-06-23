@@ -401,6 +401,9 @@ def parseOptions():
     optParser.add_option('-k', '--episodes',action='store',
                          type='int',dest='episodes',default=1,
                          metavar="K", help='Number of epsiodes of the MDP to run (default %default)')
+    optParser.add_option('--planning_steps', action='store',
+                         type='int',dest='planning_steps',default=10,
+                         metavar="S", help='Number of planning steps for DynaQ algorithm (default %default)')
     optParser.add_option('-g', '--grid',action='store',
                          metavar="G", type='string',dest='grid',default="BookGrid",
                          help='Grid to use (case sensitive; options are BookGrid, BridgeGrid, CliffGrid, MazeGrid, default %default)' )
@@ -493,6 +496,15 @@ if __name__ == '__main__':
                       'epsilon': opts.epsilon,
                       'actionFn': actionFn}
         a = qlearningAgents.QLearningAgent(**qLearnOpts)
+    elif opts.agent == 'dynaq':
+        gridWorldEnv = GridworldEnvironment(mdp)
+        actionFn = lambda state: mdp.getPossibleActions(state)
+        dynaqOpts = {'planning_steps': opts.planning_steps,
+                     'gamma': opts.discount,
+                     'alpha': opts.learningRate,
+                     'epsilon': opts.epsilon,
+                     'actionFn': actionFn}
+        a = qlearningAgents.DynaQAgent(**dynaqOpts)       
     elif opts.agent == 'random':
         # # No reason to use the random agent without episodes
         if opts.episodes == 0:
@@ -547,7 +559,7 @@ if __name__ == '__main__':
         else:
             if opts.agent in ('random', 'value', 'asynchvalue', 'priosweepvalue'):
                 displayCallback = lambda state: display.displayValues(a, state, "CURRENT VALUES")
-            if opts.agent == 'q': displayCallback = lambda state: display.displayQValues(a, state, "CURRENT Q-VALUES")
+            if opts.agent in ('q', 'dynaq'): displayCallback = lambda state: display.displayQValues(a, state, "CURRENT Q-VALUES")
 
     messageCallback = lambda x: printString(x)
     if opts.quiet:
@@ -579,7 +591,7 @@ if __name__ == '__main__':
         print()
 
     # DISPLAY POST-LEARNING VALUES / Q-VALUES
-    if opts.agent == 'q' and not opts.manual:
+    if opts.agent in ('q', 'dynaq') and not opts.manual:
         try:
             display.displayQValues(a, message = "Q-VALUES AFTER "+str(opts.episodes)+" EPISODES")
             display.pause()

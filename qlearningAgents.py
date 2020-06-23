@@ -36,7 +36,6 @@ class QLearningAgent(ReinforcementAgent):
         """
         return float(self.qvalues[state,action])
 
-
     def computeValueFromQValues(self, state):
         """
           Returns max_action Q(state,action)
@@ -100,6 +99,46 @@ class QLearningAgent(ReinforcementAgent):
     def getValue(self, state):
         return self.computeValueFromQValues(state)
 
+
+class DynaQAgent(QLearningAgent):
+    """ 
+        Implement the DynaQ reinforcement learning algorithm
+        Note: code adapted from Steven Aronson
+    """
+
+    def __init__(self, planning_steps = 10, **args):
+        QLearningAgent.__init__(self, **args)
+        self.planning_steps = planning_steps
+        self.model = {}
+        
+    def setModel(self, state, action, next_state, reward):
+        self.model[(state, action)] = (next_state, reward)
+
+    def getModel(self, state, action):
+        return self.model[(state, action)]
+    
+    def setPlanningSteps(self, steps):
+        self.planning_steps = steps
+
+    def update(self, state, action, nextState, reward):
+        """
+          The parent class calls this to observe a
+          state => action => nextState and reward transition.
+          NEVER call this function. It is called on your behalf.
+        """
+        self.qvalues[state,action] = \
+            (1-self.alpha)*self.getQValue(state,action)\
+                + self.alpha*(reward + self.discount*self.getValue(nextState))   
+        self.setModel(state, action, nextState, reward)
+
+        # planning phase
+        if self.planning_steps > 0:
+            for step in range(self.planning_steps):
+                (m_state, m_action) = random.choice(list(self.model))
+                (next_m_state, m_reward) = self.getModel(m_state, m_action)
+                self.qvalues[m_state,m_action] = \
+                    (1-self.alpha)*self.getQValue(m_state , m_action)\
+                    + self.alpha*(m_reward + self.discount*self.getValue(next_m_state))
 
 class PacmanQAgent(QLearningAgent):
     "Exactly the same as QLearningAgent, but with different default parameters"
