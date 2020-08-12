@@ -74,10 +74,9 @@ class QLearningAgent(ReinforcementAgent):
           take the best policy action.  If there are no legal actions, 
           which is the case at a terminal state, choose None as the action.
         """
-        legalActions = self.getLegalActions(state)
         action = None
         if util.flipCoin(self.epsilon):
-              action = random.choice(legalActions)
+              action = random.choice(self.getLegalActions(state))
         else:
               action = self.getPolicy(state)
 
