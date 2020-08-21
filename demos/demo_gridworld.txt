@@ -1,3 +1,6 @@
+cd to Directory:
+    cd C:\Users\seoha\OneDrive\repos\cs188-rl
+
 Q-Learning in Gridworld:
     python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -m
     python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -p  # step by step

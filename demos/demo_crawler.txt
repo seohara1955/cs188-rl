@@ -1,4 +1,7 @@
 Q-Learning with Crawler:
 (Demo importance of different discount rates: 0.5, 0.8, 0.919.  Note average velocity)
 
+cd to Directory:
+    cd C:\Users\seoha\OneDrive\repos\cs188-rl
+
     python crawler.py
