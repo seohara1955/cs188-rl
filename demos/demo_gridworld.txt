@@ -1,47 +1,65 @@
 cd to Directory:
     cd C:\Users\seoha\OneDrive\repos\cs188-rl
 
+Command-Line Options:
+> python gridworld.py [Options]
+
+    # Algorithm Options:
+        -a # agent type ['random'(default), 'value' or 'q']
+        -k # number of episodes [1]
+        -l # learning rate (alpha) [0.5]
+        -d # discount (gamma) [0.9]
+        -e # probability of random action (epsilon) [0.3]
+        -n # probability of unintended action (noise) [0.2]
+        -r # living reward [0.0]
+
+    # Display Options:
+        -g # grid to use ['BookGrid'(default), 'BridgeGrid',
+                            'CliffGrid', 'MazeGrid']
+        -w # window size [150]
+        -m # operate manually using arrow keys
+        -p # pause each step
+        -q # display only final policy
+        -s # demo speed [1.0]
+        -t # use text display (broken?)
+
+    # Value Iteration Options
+        -i # number of value iteration steps [10]
+        -v # display each value iteration step
+
+    # Other
+        -h # help
+
+Demo Scenarios:
+> python gridworld.py -w 200 -k 40 -s 0.2 -a q -d 1.0 -m  # run manually using arrows keys (-m)
+> python gridworld.py -w 200 -k 40 -s 0.2 -a q -d 1.0 -p  # run step by step using return (-p)
+> python gridworld.py -w 200 -k 40 -s 0.2 -a q -d 1.0     # run slow automatically (-s 0.2)
+> python gridworld.py -w 200 -k 40 -s 2.0 -a q -d 1.0     # run fast automatically (-s 2.0)
+> python gridworld.py -w 200 -k 40 -a q -d 1.0 -q         # show final policy only
+
 Q-Learning in Gridworld:
-    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -m
-    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0 -p  # step by step
-    python gridworld.py -k 40 -w 200 -s 0.2 -a q -d 1.0     # automatic
-    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0      # fast
-    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r -0.1      # fast
-    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r -1.0      # die quick
-    python gridworld.py -k 40 -w 200 -s 2.0 -a q -d 1.0 -r  1.0      # stay alive
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -r -0.0085 -q  # get there carefully
+> python gridworld.py -w 200 -k 1000 -a q -d 1.0 -r -0.0085 -q # get there carefully (more training)
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -r -0.1 -q     # get there fast
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -r -1.0 -q     # die quickly
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -r  1.0 -q     # stay alive indefinitely
 
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid -l 0.3 -r -0.1
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g CliffGrid -l 0.2 -r -0.1
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -g CliffGrid -l 0.5 -r -0.1 -q
+> python gridworld.py -w 200 -k 100 -a q -d 1.0 -g CliffGrid -l 0.5 -r -1.0 -q
     
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
-    python gridworld.py -k 100 -w 200 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
+> python gridworld.py -w 200 -k 40 -s 3 -a q -d 1.0 -g BridgeGrid
+> python gridworld.py -w 200 -k 40 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
+> python gridworld.py -w 200 -k 100 -s 3 -a q -d 1.0 -g BridgeGrid -r -0.1 -l 0.3
 
-    python gridworld.py -k 40 -w 200 -s 3 -a q -d 1.0 -g MazeGrid
+> python gridworld.py -w 200 -k 40 -s 3 -a q -d 1.0 -g MazeGrid
 
 Value Iteration in Gridworld:
-    python gridworld.py -k 40 -w 200 -s 0.25 -i 15 -a value -p -v # step by step
-    python gridworld.py -k 40 -w 200 -s 0.25 -i 15 -a value       # automatic
-
-    # crossing the bridge: noise vs discount
-    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.9 --noise 0.2  # too much noise
-    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.9 --noise 0.01 # get down the bridge
-    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.7 --noise 0.01 # too much discount
-    python gridworld.py -a value -i 100 -g BridgeGrid --discount 0.3 --noise 0.01  # more discount, shorter horizon
-
-    # risk, reward and horizon
-    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward -2 # risk cliff for closer reward
-    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward -1 # risk cliff for bigger reward
-    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.5 --noise 0.2 --livingReward -1  # don't risk cliff for closer reward
-    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward 0  # don't risk cliff for bigger reward
-    python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward 20  # stay alive
-
-    
+> python gridworld.py -w 200 -k 40 -s 0.25 -i 15 -a value -p -v # step by step
+> python gridworld.py -w 200 -k 40 -s 0.25 -i 15 -a value       # automatic
 
 
+> python gridworld.py -h
 
-(base) C:\Users\seoha\iCloudDrive\repos\cs188-rl>python gridworld.py -h
 Usage: gridworld.py [options]
 
 Options:
@@ -71,3 +89,5 @@ Options:
                         is slower (default 1.0)
   -m, --manual          Manually control agent
   -v, --valueSteps      Display each step of value iteration
+
+(base) C:\Users\seoha\iCloudDrive\repos_bb_stage\cs188-rl>
